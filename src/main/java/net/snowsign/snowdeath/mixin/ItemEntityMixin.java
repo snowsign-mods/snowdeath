@@ -43,11 +43,14 @@ public abstract class ItemEntityMixin implements MarkedItem {
         this.deceased = view.read("Deceased", Uuids.INT_STREAM_CODEC).orElse(null);
     }
 
-    @Redirect(method = "tick", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/entity/ItemEntity;discard()V"))
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;discard()V", ordinal = 1))
     public void discardIfNotMarked(ItemEntity instance) {
-        if (deceased == null) instance.discard();
+        if (this.deceased == null) {
+            instance.discard();
+            return;
+        }
 
-        Integer deaths = getPlayerDeaths(instance.getServer(), deceased);
+        Integer deaths = getPlayerDeaths(instance.getServer(), this.deceased);
         if (
             deaths == null
                 || deaths - ((MarkedItem) instance).snowdeath$getDeathCount() < 5
