@@ -4,13 +4,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.stat.ServerStatHandler;
 import net.minecraft.stat.Stats;
 import net.snowsign.snowdeath.mixin.PlayerManagerAccessor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
 
 public class MixinUtil {
-    public static @Nullable Integer getPlayerDeaths(MinecraftServer server, UUID player) {
+    public static @Nullable Integer getPlayerDeaths(@Nullable MinecraftServer server, @NotNull UUID player) {
         if (server == null) return null;
 
         Map<UUID, ServerStatHandler> statisticsMap =
