@@ -50,7 +50,7 @@ public abstract class ItemEntityMixin implements MarkedItem {
             return;
         }
 
-        Integer deaths = getPlayerDeaths(instance.getServer(), this.deceased);
+        Integer deaths = getPlayerDeaths(instance.getEntityWorld().getServer(), this.deceased);
         if (
             deaths == null
                 || deaths - ((MarkedItem) instance).snowdeath$getDeathCount() < 5

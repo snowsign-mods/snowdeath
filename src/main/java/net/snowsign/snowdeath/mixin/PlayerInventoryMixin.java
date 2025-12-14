@@ -22,9 +22,8 @@ public abstract class PlayerInventoryMixin {
         if (
             droppedItem != null
                 && instance instanceof ServerPlayerEntity serverPlayer
-                && serverPlayer.getServer() != null
         ) {
-            Integer deaths = getPlayerDeaths(serverPlayer.getServer(), serverPlayer.getUuid());
+            Integer deaths = getPlayerDeaths(serverPlayer.getEntityWorld().getServer(), serverPlayer.getUuid());
             ((MarkedItem) droppedItem).snowdeath$mark(serverPlayer.getUuid(), deaths != null ? deaths + 1 : 1);
         }
         return droppedItem;
