@@ -1,9 +1,9 @@
 package net.snowsign.snowdeath.mixin;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Uuids;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.snowsign.snowdeath.MarkedItem;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Debug;
@@ -28,34 +28,34 @@ public abstract class ItemEntityMixin implements MarkedItem {
     @Unique
     private @Nullable UUID deceased = null;
     @Shadow
-    private int itemAge;
+    private int age;
 
 
-    @Inject(method = "writeCustomData", at = @At("HEAD"))
-    private void writeMarkedData(WriteView view, CallbackInfo ci) {
-        view.putShort("DeathCount", (short) this.deathCount);
-        view.putNullable("Deceased", Uuids.INT_STREAM_CODEC, this.deceased);
+    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
+    private void writeMarkedData(ValueOutput output, CallbackInfo ci) {
+        output.putShort("DeathCount", (short) this.deathCount);
+        output.storeNullable("Deceased", UUIDUtil.CODEC, this.deceased);
     }
 
-    @Inject(method = "readCustomData", at = @At("HEAD"))
-    public void readMarkedData(ReadView view, CallbackInfo ci) {
-        this.deathCount = view.getShort("DeathCount", (short) -1);
-        this.deceased = view.read("Deceased", Uuids.INT_STREAM_CODEC).orElse(null);
+    @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
+    public void readMarkedData(ValueInput input, CallbackInfo ci) {
+        this.deathCount = input.getShortOr("DeathCount", (short) -1);
+        this.deceased = input.read("Deceased", UUIDUtil.CODEC).orElse(null);
     }
 
-    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;discard()V", ordinal = 1))
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/item/ItemEntity;discard()V", ordinal = 1))
     public void discardIfNotMarked(ItemEntity instance) {
         if (this.deceased == null) {
             instance.discard();
             return;
         }
 
-        Integer deaths = getPlayerDeaths(instance.getEntityWorld().getServer(), this.deceased);
+        Integer deaths = getPlayerDeaths(instance.level().getServer(), this.deceased);
         if (
             deaths == null
-                || deaths - ((MarkedItem) instance).snowdeath$getDeathCount() < 5
+            || deaths - ((MarkedItem) instance).snowdeath$getDeathCount() < 5
         ) {
-            this.itemAge = 6000; // Prevent overflow
+            this.age = 6000; // Prevent overflow
             return;
         }
         instance.discard();

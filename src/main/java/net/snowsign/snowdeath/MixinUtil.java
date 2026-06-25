@@ -1,9 +1,9 @@
 package net.snowsign.snowdeath;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.stat.ServerStatHandler;
-import net.minecraft.stat.Stats;
-import net.snowsign.snowdeath.mixin.PlayerManagerAccessor;
+import net.minecraft.stats.ServerStatsCounter;
+import net.minecraft.stats.Stats;
+import net.snowsign.snowdeath.mixin.PlayerListAccessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,11 +14,11 @@ public class MixinUtil {
     public static @Nullable Integer getPlayerDeaths(@Nullable MinecraftServer server, @NotNull UUID player) {
         if (server == null) return null;
 
-        Map<UUID, ServerStatHandler> statisticsMap =
-            ((PlayerManagerAccessor) server.getPlayerManager()).getStatisticsMap();
-        ServerStatHandler playerStatHandler = statisticsMap.get(player);
+        Map<UUID, ServerStatsCounter> statisticsMap =
+            ((PlayerListAccessor) server.getPlayerList()).getStats();
+        ServerStatsCounter playerStatHandler = statisticsMap.get(player);
 
         if (playerStatHandler == null) return null;
-        return playerStatHandler.getStat(Stats.CUSTOM.getOrCreateStat(Stats.DEATHS));
+        return playerStatHandler.getValue(Stats.CUSTOM.get(Stats.DEATHS));
     }
 }
